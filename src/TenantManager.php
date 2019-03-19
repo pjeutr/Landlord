@@ -146,11 +146,14 @@ class TenantManager
 
         $this->modelTenants($model)->each(function ($id, $tenant) use ($model) {
             $model->addGlobalScope($tenant, function (Builder $builder) use ($tenant, $id, $model) {
-                if ($this->getTenants()->first() && $this->getTenants()->first() != $id) {
-                    $id = $this->getTenants()->first();
+                // Fix for multiple tenants - https://github.com/hipsterjazzbo/Landlord/pull/86/
+                // Allow for multiple Tenant ID's to be included - https://github.com/HipsterJazzbo/Landlord/pull/53
+                $id = $this->getTenantId($tenant);
+                if (is_array($id)) {
+                    $builder->whereIn($model->getQualifiedTenant($tenant), $id);
+                } else {
+                    $builder->where($model->getQualifiedTenant($tenant), '=', $id);
                 }
-
-                $builder->where($model->getQualifiedTenant($tenant), '=', $id);
             });
         });
     }
@@ -168,11 +171,14 @@ class TenantManager
                 }
 
                 $model->addGlobalScope($tenant, function (Builder $builder) use ($tenant, $id, $model) {
-                    if ($this->getTenants()->first() && $this->getTenants()->first() != $id) {
-                        $id = $this->getTenants()->first();
+                    // Fix for multiple tenants - https://github.com/hipsterjazzbo/Landlord/pull/86/
+                    // Allow for multiple Tenant ID's to be included - https://github.com/HipsterJazzbo/Landlord/pull/53
+                    $id = $this->getTenantId($tenant);
+                    if (is_array($id)) {
+                        $builder->whereIn($model->getQualifiedTenant($tenant), $id);
+                    } else {
+                        $builder->where($model->getQualifiedTenant($tenant), '=', $id);
                     }
-
-                    $builder->where($model->getQualifiedTenant($tenant), '=', $id);
                 });
             });
         });
